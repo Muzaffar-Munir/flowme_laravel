@@ -50,15 +50,23 @@ class AuthController extends Controller
         }
     }
 
-    public function register(UserRegisterRequest $request)
+    public function register(Request $request)
     {
         $input = $request->all();
+        $this->validate($request,[
+            'first_name' => 'required|min:3|max:555',
+            'last_name' => 'required|min:3|max:555',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required',
+            'password_confirmation' => 'required|same:password',
+            'phone_number' => 'required|unique:users,phone_number'
+        ]);
         $input['password'] = bcrypt($input['password']);
         $input['type'] = 'user';
         $user = User::create($input);
         $success['message'] = 'User registered successfully.';
         return response()->json([
-            'user' => new RegisteredUserResource($user),
+            'user' => $user,
             'token' => $user->createToken('user')->accessToken,
             'success' => $success
         ], Response::HTTP_OK);
