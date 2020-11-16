@@ -28,18 +28,18 @@ class MtnController extends Controller
         $amount = $request->amount;
         $sender= User::findOrFail($request->sender_id);
 
-        $receiver = User::where('email','=',$request->receiver_contact)->orWHere('phone_number','=', $request->receiver_contact)->first();
-            if(!$receiver || $sender){
-            return response()->json(['error' => 'receiver user not exist'], 400);
+        $receiver = User::where('email','=',$request->receiver_contact)->orWhere('phone_number','=', $request->receiver_contact)->first();
+            if(!$receiver || !$sender){
+            return response()->json(['error' => 'receiver or sender user not exist'], 201);
         } else{
             $transaction = new UserTransaction;
             $transaction->send_by= $sender->id;
             $transaction->send_to= $receiver->id;
             $transaction->amount= $amount;
             if($transaction->save()){
-                return response()->json(['success' => 'Transactions succeded'], 200);
+                return response()->json(['success' => 'transactions succeded'], 200);
             } else{
-                return response()->json(['error' => 'error in form uploading'], 400);
+                return response()->json(['error' => 'error in form uploading'], 201);
             }
         }
     }
