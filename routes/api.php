@@ -26,5 +26,6 @@ Route::post('forget/password', 'App\Http\Controllers\AuthController@passwordForg
 Route::post('change/password', 'App\Http\Controllers\AuthController@changePassword');
 
 Route::post('transfer/money', 'App\Http\Controllers\MtnController@transferMoney');
+Route::post('send/money', 'App\Http\Controllers\MtnController@sendMoney');
 
 Route::get('fetch/history', 'App\Http\Controllers\UserTransactionController@index');
