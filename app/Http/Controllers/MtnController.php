@@ -10,7 +10,7 @@ use Bmatovu\MtnMomo\Exceptions\CollectionRequestException;
 
 class MtnController extends Controller
 {
-    public function transferMoneys(Request $request)
+    public function transferMoney(Request $request)
     {
         $amount = $request->amount;
         try {
@@ -25,22 +25,28 @@ class MtnController extends Controller
         }
     }
     public function sendMoney(Request $request){
-        $amount = $request->amount;
-        $sender= User::findOrFail($request->sender_id);
+        // dd(auth('api')->id());
+        if(auth('api')->id()){
+            $amount = $request->amount;
+            $sender= User::findOrFail(auth('api')->id());
 
-        $receiver = User::where('email','=',$request->receiver_contact)->orWhere('phone_number','=', $request->receiver_contact)->first();
-            if(!$receiver || !$sender){
-            return response()->json(['error' => 'receiver or sender user not exist'], 201);
-        } else{
-            $transaction = new UserTransaction;
-            $transaction->send_by= $sender->id;
-            $transaction->send_to= $receiver->id;
-            $transaction->amount= $amount;
-            if($transaction->save()){
-                return response()->json(['success' => 'transactions succeded'], 200);
+            $receiver = User::where('email','=',$request->receiver_contact)->orWhere('phone_number','=', $request->receiver_contact)->first();
+                if(!$receiver || !$sender){
+                return response()->json(['error' => 'receiver or sender user not exist','code'=>201], 201);
             } else{
-                return response()->json(['error' => 'error in form uploading'], 201);
+                $transaction = new UserTransaction;
+                $transaction->send_by= $sender->id;
+                $transaction->send_to= $receiver->id;
+                $transaction->amount= $amount;
+                if($transaction->save()){
+                    return response()->json(['success' => 'transactions succeded','code'=>200], 200);
+                } else{
+                    return response()->json(['error' => 'error in form uploading','code'=>201], 201);
+                }
             }
+        } else{
+            return response()->json(['error' => 'plz login to trigger this route','code'=>201], 201);
         }
+
     }
 }

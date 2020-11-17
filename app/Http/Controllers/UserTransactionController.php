@@ -10,9 +10,9 @@ class UserTransactionController extends Controller
     {
         $history = UserTransaction::where('send_by', auth('api')->id())->orWhere('send_by', auth('api')->id())->with('sendBy')->with('sendTo')->orderByDesc('id')->get();
         if($history &&  $history->count() > 0){
-            return response()->json(['history' => $history], 200);
+            return response()->json(['history' => $history,'success'=>true,'code'=>200], 200);
         } else{
-            return response()->json(['error' => 'no history exists for this user'], 201);
+            return response()->json(['error' => 'no history exists for this user', 'code'=>201], 201);
         }
 
     }

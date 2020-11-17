@@ -35,6 +35,7 @@ class AuthController extends Controller
             $user = Auth::user();
             return response()->json([
                 'user' => new RegisteredUserResource($user),
+                'code'=>200,
                 'token' => $user->createToken('user')->accessToken,
             ], Response::HTTP_OK);
         } else {
@@ -45,7 +46,8 @@ class AuthController extends Controller
         if ($error) {
             return response()->json([
                 'message' => 'Something went wrong.',
-                'errors' => $errors
+                'errors' => $errors,
+                'code'=>201
             ], $statusCode);
         }
     }
@@ -65,11 +67,18 @@ class AuthController extends Controller
         $input['type'] = 'user';
         $user = User::create($input);
         $success['message'] = 'User registered successfully.';
+       if($user){
         return response()->json([
             'user' => $user,
             'token' => $user->createToken('user')->accessToken,
-            'success' => $success
+            'success' => $success,
+            'code'=>200
         ], Response::HTTP_OK);
+       } else{
+        return response()->json([
+            'error' => 'error in create user','code'=>201
+        ], 201);
+       }
     }
 
     public function details()
