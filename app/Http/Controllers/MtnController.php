@@ -25,7 +25,6 @@ class MtnController extends Controller
         }
     }
     public function sendMoney(Request $request){
-        // dd(auth('api')->id());
         if(auth('api')->id()){
             $amount = $request->amount;
             $sender= User::findOrFail(auth('api')->id());
@@ -34,14 +33,18 @@ class MtnController extends Controller
                 if(!$receiver || !$sender){
                 return response()->json(['error' => 'receiver or sender user not exist','code'=>201], 201);
             } else{
-                $transaction = new UserTransaction;
-                $transaction->send_by= $sender->id;
-                $transaction->send_to= $receiver->id;
-                $transaction->amount= $amount;
-                if($transaction->save()){
-                    return response()->json(['success' => 'transactions succeded','code'=>200], 200);
+                if($sender->id== $receiver->id){
+                    return response()->json(['error' => "you can't send money to your self",'code'=>201], 201);
                 } else{
-                    return response()->json(['error' => 'error in form uploading','code'=>201], 201);
+                    $transaction = new UserTransaction;
+                    $transaction->send_by= $sender->id;
+                    $transaction->send_to= $receiver->id;
+                    $transaction->amount= $amount;
+                    if($transaction->save()){
+                        return response()->json(['success' => 'transactions succeded','code'=>200], 200);
+                    } else{
+                        return response()->json(['error' => 'error in form uploading','code'=>201], 201);
+                    }
                 }
             }
         } else{

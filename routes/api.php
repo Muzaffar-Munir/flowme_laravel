@@ -29,3 +29,4 @@ Route::post('transfer/money', 'App\Http\Controllers\MtnController@transferMoney'
 Route::post('send/money', 'App\Http\Controllers\MtnController@sendMoney');
 
 Route::get('fetch/history', 'App\Http\Controllers\UserTransactionController@index');
+Route::post('stripe-post', 'App\Http\Controllers\UserTransactionController@stripePost');

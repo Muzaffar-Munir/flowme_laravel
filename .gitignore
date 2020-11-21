@@ -3,6 +3,7 @@
 /public/storage
 /storage/*.key
 /*.zip
+/serverCredentials.txt
 /vendor
 .env
 .env.backup
