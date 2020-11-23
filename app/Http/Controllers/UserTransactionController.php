@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\paymentEmail;
+use App\Models\User;
 use App\Models\UserTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Stripe;
 
 class UserTransactionController extends Controller
@@ -16,13 +19,14 @@ class UserTransactionController extends Controller
             if ($history &&  $history->count() > 0) {
                 $newarray=[];
                 foreach ($history as $data) {
+
                     if ($data->send_by == null || $data->send_by == 'null') {
                         $data->send_by = [];
                     }
                     if ($data->send_to == null || $data->send_to == 'null') {
                         $data->send_to = [];
                     }
-                    $newarray []= $data;
+                    $newarray[]= $data;
                 }
                 return response()->json(['history' => $newarray, 'success' => true, 'code' => 200], 200);
             } else {
@@ -53,13 +57,9 @@ class UserTransactionController extends Controller
                     "source" => $token,
                     "description" => 'flow me payment from user'
                 ]);
-                if ($payment) {
-                    $transaction = new UserTransaction;
-                    $transaction->send_by = auth('api')->id();
-                    $transaction->send_to = "stripe";
-                    $transaction->amount = $request->amount;
-                    $transaction->save();
-                    return response()->json(['stripe_payment' => $payment, 'local_transaction' => $transaction, 'success' => true, 'code' => 200], 200);
+                $savingUserTransaction= $this->addPaymentUser($request->amount,auth('api')->id() );
+                if ($payment && $savingUserTransaction) {
+                    return response()->json(['stripe_payment' => $payment, 'user'=>$savingUserTransaction, 'success' => true, 'code' => 200], 200);
                 } else {
                     return response()->json(['error' => 'error in sending payment', 'code' => 201], 201);
                 }
@@ -70,6 +70,20 @@ class UserTransactionController extends Controller
             return back();
         } else {
             return response()->json(['error' => 'plz login to do transaction', 'code' => 201], 201);
+        }
+    }
+    public function addPaymentUser($amount, $user_id){
+        $transaction = new UserTransaction;
+        $transaction->send_by = $user_id;
+        $transaction->send_to = "stripe";
+        $transaction->amount = $amount;
+        $user = User::findOrfail($user_id);
+        $user->total_cash= $user->total_cash+$amount;
+        Mail::to($user->email)->send(new paymentEmail($user));
+        if($user->save() && $transaction->save()){
+            return ['user'=>$user];
+        } else{
+            return false;
         }
     }
 }
